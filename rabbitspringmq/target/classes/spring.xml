@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+     http://www.springframework.org/schema/rabbit
+     http://www.springframework.org/schema/rabbit/spring-rabbit-1.2.xsd">
+
+    <!--定义rabbit MQ的连接工厂-->
+    <rabbit:connection-factory id="connectionFactory" host="192.168.229.129"
+    port="5672" username="root" password="root" virtual-host="/"/>
+
+    <!--定义Rabbit模板，指定连接工厂以及定义exchage-->
+    <rabbit:template id="amqpTemplate" connection-factory="connectionFactory" exchange="fanoutExchage"/>
+    <!--MQ的管理，包括队列、交换器声明等-->
+    <rabbit:admin connection-factory="connectionFactory"/>
+
+    <!--定义队列，自动声明-->
+    <rabbit:queue name="myQueue" auto-declare="true" durable="true"/>
+
+    <!--定义交换器，自动声明-->
+    <rabbit:fanout-exchange name="fanoutExchage" auto-declare="true">
+        <rabbit:bindings>
+            <rabbit:binding queue="myQueue"/>
+        </rabbit:bindings>
+    </rabbit:fanout-exchange>
+<!--&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+    <!--队列监听-->
+    <rabbit:listener-container connection-factory="connectionFactory">
+        <rabbit:listener ref="foo" method="listen" queue-names="myQueue"/>
+    </rabbit:listener-container>
+
+    <!--消费者-->
+    <bean id="foo" class="net.abadguy.rabbitmq.MyConsumer"/>
+</beans>
